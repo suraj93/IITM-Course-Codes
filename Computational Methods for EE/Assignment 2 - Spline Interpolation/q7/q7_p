@@ -1,5 +1,0 @@
-import numpy as np
-from scipy.special import jn,jv
-from scipy import *
-from matplotlib.pyplot import *
-from scipy import weave

@@ -1,0 +1,139 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[paper=a4, fontsize=12pt]{scrartcl} % A4 paper and 11pt font size
+
+\usepackage[margin=1.0in]{geometry}
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage{fourier} % Use the Adobe Utopia font for the document - comment this line to return to the LaTeX default
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{sectsty} % Allows customizing section commands
+\allsectionsfont{\centering \normalfont\scshape} % Make all sections centered, the default font and small caps
+
+\usepackage{IEEEtrantools}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{\thepage} % Page numbering for right footer
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+%\setlength\parindent{0pt} % Removes all indentation from paragraphs - comment this line for an assignment with lots of text
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{	
+\normalfont \normalsize 
+\textsc{Department of EE - IIT Madras} \\ [25pt] % Your university, school and/or department name(s)
+\horrule{0.5pt} \\[0.4cm] % Thin top horizontal rule
+\huge Assignment 1 \\Optimizing Irregular LDPC Codes % The assignment title
+\horrule{2pt} \\[0.5cm] % Thick bottom horizontal rule
+}
+
+\author{Surajkumar Harikumar (EE11B075)} % Your name
+
+\date{\normalsize\today} % Today's date or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+%----------------------------------------------------------------------------------------
+%	PROBLEM 1
+%----------------------------------------------------------------------------------------
+
+\section{Problem Statement}
+
+Find the optimal LDPC code with the highest rate for a given channel erasure probability, and given the maximum left and right degree distributions. To simplify computation, we assume that the check-node degree distribution is a monomial, i.e all the check nodes have the same degree. We assume that the channel is a BEC, and that Gallager's decoding algorithm is used.
+
+\section{Solution Scheme}
+We know that for a $(\lambda,\rho)$ irregular-LDPC code, the density evolution equation is given by
+\begin{equation}
+ x^{(l+1)} = f(x^{(l)},\epsilon)=\epsilon \lambda( 1 - \rho(1-x^{(l)} ) ) 
+\end{equation}
+where $x^{(l)}$ is the probability of edge-error averaged over all edges, in iteration $l$.
+
+Assuming $\rho(x)=x^{r-1}$, i.e all check nodes are of degree $r$, we can reduce the equation to 
+\begin{equation}
+ x^{(l+1)} = \epsilon \lambda\left( 1 - (1-x^{(l)} )^{r-1} \right) 
+\end{equation}
+
+We also know that for the probability of error to decay to zero as $l \to \infty$, we require $x^{(l+1)} < x^{(l)}$. This needs to hold for all values of $x \in [0,\epsilon]$. So, we set up a linear programming problem, where we maximize the rate.
+\begin{equation}
+R = 1 - \frac{\int_0^1 \rho(x)dx}{\int_0^1 \lambda(x)dx} = 1 - \frac{1/r}{\sum_0^{l-1} \lambda_i/i}
+\end{equation}
+
+So, to maximize rate, we want to  $\textsc{max}\:\: \sum_0^{l-1} \lambda_i/i$
+\\ \\
+To obtain the inequality constraints, we just vary $x$ in discrete steps from $[0,\epsilon]$. Each density evolution equation corresponds to $f(x,\epsilon)<\epsilon$, so all these equations give us inequality constraints.
+\\ \\
+We also add the constraint that the sum of all $\lambda_i$ should be one. $\sum_0^{l-1} \lambda_i =1$, and that all $\lambda_i$ lie in $[0,1]$. So our linear programming problem is
+
+\begin{IEEEeqnarray}{rCl}
+\textsc{max}\:\: \sum_0^{l-1} \lambda_i/i &&
+  \nonumber \\
+ \epsilon \sum_{i=0}^{l-1} \lambda_i\left( 1 - (1-x^{(l)} )^{r-1} \right)^{i-1} \;&<&\; x \;\;\;\;\forall x \in \chi \nonumber \\
+ \sum_0^{l-1} \lambda_i \;&=&1\; \nonumber  \\
+ 0\;\leq\; \lambda_i \;&\leq&\; 1 \;\;\;\;\forall i 
+\end{IEEEeqnarray}
+
+We set up this set of equations, and used \textsc{MATLAB's LINPROG} function to solve for the best $\lambda(x)$. 
+\\ \\
+Note that we assumed that the check node degree is a constant. We iterate over all values of $r\in [3,r_{max}]\;,r\in \mathbb{N}$  to obtain the best possible LDPC code (assuming constant right degree distribution).
+
+\section{Simulation Results and best codes}
+
+The function which implements the optimization is \textbf{irreg\_opt\_single.m}. The code for finding the threshold for a given degree distribution is \textbf{thresh\_finder\_bec.m}. A sample code to run the example shown here is in \textbf{test1.m}.
+
+Using $\epsilon=0.48$, we see that $R\leq 1-\epsilon = 0.52$. We set $l_{max}=100$ and $r_{max}=12$ and run the optimization procedure. We obtain 
+
+\begin{IEEEeqnarray}{rCl}
+R_{best} \;&=&\; 0.5187  \nonumber \\
+ \rho(x) \;&=&\; x^{11} \nonumber \\
+ \lambda(x) \;&=&\;  0.2315x^{2} +  0.1028x^{3} +  0.0667x^{4} +  0.0351x^{5} +  0.0686x^{6} \nonumber  \\ 
+ &+&\;  0.0003x^{8}  +  0.0586x^{9} +  0.0474x^{10}  
+  0.0001x^{15} +  0.0002x^{16} \nonumber \\
+  &+&\;   0.0606x^{17} +  0.0519x^{18} +  0.0002x^{19} +  0.0001x^{35} +  0.0003x^{36} \nonumber \\
+   &+&\;   0.1239x^{37} +  0.0001x^{39} +  0.1150x^{99} +  0.0364x^{100}  \nonumber  \\
+\end{IEEEeqnarray}
+
+The best rate-code obtained is $\textbf{0.5187}$, which is very close to the bound of $0.52$. We observe that we require nodes of high degree (even $101$) to obtain such a high rate LDPC code. One other observation is that for $r \geq 13$, the linear programming problem does not converge. So, this is the best solution scheme for $\rho(x)$ being a monomial, with max degree $ \leq 12$
+\end{document}
+

@@ -7,5 +7,6 @@ Courses require code written languges including C++, Python, Matlab (and some La
 Courses in this include 
 - Computational Methods for Electrical Engineering
 - Data Structures and Algorithms
+- Modern Coding Theory
 
 This is meant for educational purposes only. Please do not violate the class honor code. 
